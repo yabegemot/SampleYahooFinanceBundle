@@ -1,3 +1,0 @@
-sample_yahoo_finance_homepage:
-    path:     /
-    defaults: { _controller: SampleYahooFinanceBundle:Default:index }

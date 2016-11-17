@@ -1,0 +1,6 @@
+services:
+    userbundle.tblprefix_subscriber:
+        class: Sample\UserBundle\Subscriber\TablePrefixSubscriber
+        arguments: [%samplebundle.db.table_prefix%]
+        tags:
+            - { name: doctrine.event_subscriber }

@@ -64,3 +64,13 @@ swiftmailer:
     username:  "%mailer_user%"
     password:  "%mailer_password%"
     spool:     { type: memory }
+
+doctrine_migrations:
+    dir_name: %kernel.root_dir%/DoctrineMigrations/
+    namespace: Application\Migrations
+    table_name: %samplebundle.db.table_prefix%migration_versions
+    name: Application Migrations
+
+#sample_user:
+#  sub:
+#    value: value

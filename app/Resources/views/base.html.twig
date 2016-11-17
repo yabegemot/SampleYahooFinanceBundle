@@ -5,6 +5,112 @@
         <title>{% block title %}Welcome!{% endblock %}</title>
         {% block stylesheets %}{% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/jquery.validate.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+.navbar-inverse {
+   background: rgba(62,195,246,0);
+  border-bottom: none;
+}
+.navbar-inverse .navbar-toggle {
+  border: 1px solid #333;
+  border-color: rgba(255,255,255,0.7);
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color: black;
+}
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
+color: #22F;
+}
+ul.nav {
+}
+
+.navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+   border-color: transparent;
+    @media (max-width: 767px) {
+        background: rgba(255,255,255,0.75);
+    }
+}
+
+
+.small-logo-container {
+    padding-top: 50px;
+    height: 50px;
+    overflow: hidden;
+    position: absolute;
+  }
+
+.small-logo {
+  color: white;
+  font-size: 2.5em;
+  padding-bottom: 2px;
+}
+
+.big-logo-row {
+  background: gold;
+  
+  .big-logo-container {
+    padding-top: 50px;
+  }
+  
+  h1 {
+    font-size: 4em;
+    margin:0;
+    padding:0 0 15px 0;
+    
+    @media (min-width: 400px) { font-size: 4.5em; }
+    @media (min-width: 440px) { font-size: 5.5em; }
+    @media (min-width: 500px) { font-size: 6.5em; }
+    @media (min-width: 630px) { font-size: 7.5em;  }
+    @media (min-width: 768px) { font-size: 9em; padding-bottom: 15px * 2; }
+    @media (min-width: 1200px) { font-size: 12em; }
+  }
+}
+
+</style>
+<script>
+    
+var navbarHeight = $('.navbar').height(); 
+
+$(window).scroll(function() {
+  var navbarColor = "62,195,246";//color attr for rgba
+  var smallLogoHeight = $('.small-logo').height();
+  var bigLogoHeight = $('.big-logo').height();
+  
+  
+  var smallLogoEndPos = 0;
+  var smallSpeed = (smallLogoHeight / bigLogoHeight);
+  
+  var ySmall = ($(window).scrollTop() * smallSpeed); 
+  
+  var smallPadding = navbarHeight - ySmall;
+  if (smallPadding > navbarHeight) { smallPadding = navbarHeight; }
+  if (smallPadding < smallLogoEndPos) { smallPadding = smallLogoEndPos; }
+  if (smallPadding < 0) { smallPadding = 0; }
+  
+  $('.small-logo-container ').css({ "padding-top": smallPadding});
+  
+  var navOpacity = ySmall / smallLogoHeight; 
+  if  (navOpacity > 1) { navOpacity = 1; }
+  if (navOpacity < 0 ) { navOpacity = 0; }
+  var navBackColor = 'rgba(' + navbarColor + ',' + navOpacity + ')';
+  $('.navbar').css({"background-color": navBackColor});
+  
+  var shadowOpacity = navOpacity * 0.4;
+  if ( ySmall > 1) {
+    $('.navbar').css({"box-shadow": "0 2px 3px rgba(0,0,0," + shadowOpacity + ")"});
+  } else {
+    $('.navbar').css({"box-shadow": "none"});
+  }
+  
+  
+  
+});
+</script>
     </head>
     <body>
         {% block body %}{% endblock %}

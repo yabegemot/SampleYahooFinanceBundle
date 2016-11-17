@@ -1,24 +1,46 @@
-# To get started with security, check out the documentation:
-# http://symfony.com/doc/current/book/security.html
 security:
+    acl:
+        connection: default
 
-    # http://symfony.com/doc/current/book/security.html#where-do-users-come-from-user-providers
+    encoders:
+        Symfony\Component\Security\Core\User\User: plaintext
+        Sample\UserBundle\Entity\User:
+            algorithm:           sha512
+            encode_as_base64:    true
+            iterations:          5000
+
+    role_hierarchy:
+        ROLE_USER:              [ROLE_USER]
+        ROLE_ADMIN:             [ROLE_USER]
+        ROLE_SUPER_ADMIN:       [ROLE_USER, ROLE_ADMIN]
+
     providers:
-        in_memory:
-            memory: ~
+        user_db:
+            entity: { class: Sample\UserBundle\Entity\User, property: username }
 
     firewalls:
-        # disables authentication for assets and the profiler, adapt it according to your needs
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        app_area:
+            pattern:  ^/app/*
+            security: false
+        login:
+            pattern:  ^/$
+            security: false
+        sugnup_form:
+            pattern:  ^/account/sugnup
+            security: false
+        secured_area:
+            pattern:    ^/
+            form_login:
+                check_path: _security_check
+                login_path: _login
+                use_forward: false
+                use_referer: true
+            logout:
+                path:   logout
+                target: _login
 
         main:
             anonymous: ~
-            # activate different ways to authenticate
-
-            # http_basic: ~
-            # http://symfony.com/doc/current/book/security.html#a-configuring-how-your-users-will-authenticate
-
-            # form_login: ~
-            # http://symfony.com/doc/current/cookbook/security/form_login_setup.html

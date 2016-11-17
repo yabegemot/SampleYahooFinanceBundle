@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    
+           <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <div class="small-logo-container">
+            <a class="small-logo" href="#">↥Small Logo</a>
+          </div>
+        </div>
+        <div class="navbar-collapse collapse">
+          
+          <ul class="nav navbar-nav navbar-right">
+            <li class="active"><a href="{{path('sugnup_form')}}">Sign Up</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container-fluid big-logo-row">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12 big-logo-container">
+            <h1 class="big-logo">↧Big Logo</h1>
+          </div><!--/.col-xs-12 -->
+        </div><!--/.row -->
+      </div><!--/.container -->
+    </div><!--/.container-fluid -->
+    
+    
+    <div style="text-align: center;">
+        <div class="col-lg-6" style="float: none; margin-left: auto; margin-right: auto;">
+            <h1>{% trans %}Sign into your account:{% endtrans %}</h1>
+            <form class="form-signin" role="form" action="{{ path('login_check') }}" method="post">
+            {% if error %}<div class="input-error">{{ error.message }}</div>{% endif %}
+            <div class="form-group">
+                <input type="text" class="form-control{% if error %} error{% endif %}" placeholder="Username or Email" id="username" name="_username" value="{{ last_username }}" required autofocus>
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" placeholder="Password" id="password" name="_password" required>
+           </div>
+            <div class="col-lg-6">
+                <div class="text-left">
+                    <label for="remember_me"><input type="checkbox" id="remember_me" name="_remember_me" checked> Stay signed in</label>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group text-right">
+                    <input type="hidden" name="_target_path" value="account_home" />
+                    <input value="login" type="submit" class="btn btn-primary" />
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

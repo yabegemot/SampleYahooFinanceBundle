@@ -1,7 +1,22 @@
 sample_yahoo_finance:
-    resource: "@SampleYahooFinanceBundle/Resources/config/routing.yml"
+    resource: "@SampleYahooFinanceBundle/Controller/"
+    type:     annotation
     prefix:   /
 
 app:
     resource: "@AppBundle/Controller/"
     type:     annotation
+    prefix:   /app
+    
+_login:
+    resource: "@SampleUserBundle/Controller/"
+    type:     annotation
+    prefix:   /
+    
+login_check:
+    path: /login_check
+    defaults: { _controller: SampleUserBundle:Security:logout }
+    
+logout:
+    path:     /logout
+    defaults: { _controller: SampleUserBundle:Security:logout }
