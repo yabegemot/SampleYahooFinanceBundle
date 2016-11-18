@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Sample\UserBundle\Entity\User;
 use Sample\UserBundle\Entity\Role;
+use Sample\YahooFinanceBundle\Entity\StockSymbol;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -79,6 +80,27 @@ class Version20161116233825 extends AbstractMigration implements ContainerAwareI
                 $superAdmin->addRole($roleRepository->findOneBy(array('role' => Role::ROLE_SUPER_ADMIN)));
                 $this->entity_manager->persist($superAdmin);
                 $this->entity_manager->flush();
+            }
+        }
+        else
+        {
+            echo 'Table not found...'.$tablePrefix.'user'."\n";
+        }
+
+        if( true === $schema->hasTable($tablePrefix.'stock_symbol') )
+        {
+            $stockSymbolRepository = $this->entity_manager->getRepository('SampleYahooFinanceBundle:StockSymbol');
+            $stockSymbols = array('KO','INTC','WMT','AAPL','NSFT','NKE','JPM','GM','BAC','GOOG','C','PG','BA','TWX','YHOO');
+            foreach( $stockSymbols as $symbol )
+            {
+                if( !$stockSymbolRepository->findOneBy(array('symbol' => $symbol)) )
+                {
+echo 'adding symbol: '.$symbol."\n";
+                    $stockSymbol = new StockSymbol();
+                    $stockSymbol->setSymbol($symbol);
+                    $this->entity_manager->persist($stockSymbol);
+                    $this->entity_manager->flush();
+                }
             }
         }
         else

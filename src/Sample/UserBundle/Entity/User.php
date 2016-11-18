@@ -98,10 +98,17 @@ class User implements UserInterface, Serializable {
      */
     private $updatedAt;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="Sample\YahooFinanceBundle\Entity\StockSymbol", mappedBy="users", cascade={"persist","remove"})
+     * @var ArrayCollection
+     */
+    private $stockSymbols;
+
     public function __construct()
     {
         $this->isActive = true;
         $this->roles = new ArrayCollection();
+        $this->stockSymbols = new ArrayCollection();
     }
 
     /**
@@ -544,5 +551,51 @@ class User implements UserInterface, Serializable {
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * Add stockSymbol
+     *
+     * @param \Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol
+     *
+     * @return User
+     */
+    public function addStockSymbol(\Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol)
+    {
+        $this->stockSymbols[] = $stockSymbol;
+
+        return $this;
+    }
+
+    /**
+     * Check id stockSymbol exists
+     *
+     * @param \Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol
+     *
+     * @return boolean
+     */
+    public function hasStockSymbol(\Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol)
+    {
+        return $this->stockSymbols->contains($stockSymbol);
+    }
+
+    /**
+     * Remove stockSymbol
+     *
+     * @param \Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol
+     */
+    public function removeStockSymbol(\Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol)
+    {
+        $this->stockSymbols->removeElement($stockSymbol);
+    }
+
+    /**
+     * Get stockSymbols
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getStockSymbols()
+    {
+        return $this->stockSymbols;
     }
 }

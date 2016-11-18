@@ -1,0 +1,12 @@
+services:
+    appbundle.tblprefix_subscriber:
+        class: AppBundle\Subscriber\TablePrefixSubscriber
+        arguments: [%samplebundle.db.table_prefix%]
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    sampleapp.twig.acme_extension:
+        class: AppBundle\Twig\AppExtension
+        arguments: ['@service_container', '@doctrine']
+        tags:
+            - { name: twig.extension }

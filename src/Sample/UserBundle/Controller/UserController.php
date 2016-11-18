@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Sample\UserBundle\Entity\User;
 use Sample\UserBundle\Entity\Role;
 use Sample\UserBundle\Form\SignupFormType;
+use Ob\HighchartsBundle\Highcharts\Highchart;
 
 /**
  * Description of FinanceController
@@ -29,12 +30,131 @@ class UserController extends Controller
      */
     public function indexAction()
     {
+        $user = $this->getUser();
+        $stockSymbols = $user->getStockSymbols();
+        $symbols = array();
+        foreach( $stockSymbols as $stockSymbol )
+        {
+            $symbols[] = $stockSymbol->getSymbol();
+        }
+        if( !empty($symbols) )
+        {
+            $data = array();
+            array_walk( $symbols, function ( &$item1, $key ){
+                $item1 = urlencode('"'.$item1.'"');
+            });
+            $implodedSymbols = implode(',',$symbols);
+
+            $date = new \DateTime();
+            $c = curl_init();
+
+            for ($d = 0; $d < 24; $d++)
+            {
+                $dateTo = $date->format('Y-m-j');
+                $dateFrom = clone $date;
+                $oneDay = new \DateInterval('P1D');
+                $oneDay->invert = 1;
+                $dateFrom->add($oneDay);
+                $dateFrom = $dateFrom->format('Y-m-j');
+
+                $oneMonth = new \DateInterval('P1M');
+                $oneMonth->invert = 1;
+                $date->add($oneMonth);
+
+                $query = 'http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.historicaldata%20where%20symbol%20in%20('
+                        .$implodedSymbols//'%22YHOO%22,%22AAPL%22,%22GOOG%22,%22MSFT%22'
+                        .')%20and%20startDate%20=%20%22'
+                        .$dateFrom//'2016-11-17'
+                        .'%22%20and%20endDate%20=%20%22'
+                        .$dateTo//'2016-11-16'
+                        .'%22&format=json&env=store://datatables.org/alltableswithkeys';
+
+                curl_setopt($c, CURLOPT_URL, $query);
+                curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($c, CURLOPT_HEADER, false);
+                $content = curl_exec($c);
+                try
+                {
+                    $contentObject = json_decode($content);
+                    if( is_object($contentObject) && isset($contentObject->query->results->quote) )
+                    {
+                        foreach( $contentObject->query->results->quote as $quote )
+                        {
+                            if( isset($quote->Symbol) && isset($quote->Date) && isset($quote->Close)
+                                && !isset($data[$quote->Symbol][$quote->Date]) )
+                            {
+                                $data[$quote->Symbol][$quote->Date] = $quote->Close;
+                            }
+                        }
+                    }
+                } catch (Exception $ex) {}
+            }
+        }
+
+        if( !empty($data) )
+        {
+            $count = 0;
+            $series = array();
+            $yData = array();
+            $categories = array();
+            $colors = array('#4572A7', '#AA4643', '#aa9543', '#84b64a', '#4ab6a3', '#4c4ab6', '#964ab6', '#bc4636', '#a8e722', '#a4b189');
+
+            foreach( $data as $symbol => $oneData )
+            {
+                if( ++$count > 10 )
+                {
+                    break;
+                }
+                $oneData = array_reverse($oneData, true);
+                array_walk( $oneData, function ( &$item1, $key ){
+                    $item1 = round($item1,2);
+                });
+                $series[] = array(
+                    'name'  => $symbol,
+                    'type'  => 'spline',
+                    'color' => $colors[$count],
+                    'yAxis' => 1,
+                    'data'  => array_values($oneData),
+                );
+                $yData[] = array(
+                    'labels' => array(
+                        'formatter' => new \Zend\Json\Expr('function () { return this.value + "" }'),
+                        'style'     => array('color' => $colors[$count])
+                    ),
+                    'gridLineWidth' => 0,
+                    'title' => array(
+                        'text'  => '',
+                        'style' => array('color' => $colors[$count])
+                    ),
+                    'opposite' => false,
+                );
+                $categories = array_keys($oneData);
+            }
+
+            $ob = new Highchart();
+            $ob->chart->renderTo('container'); // The #id of the div where to render the chart
+            $ob->chart->type('column');
+            $ob->title->text('Cost of Portfolio vs Time');
+            $ob->xAxis->categories($categories);
+            $ob->yAxis($yData);
+            $ob->legend->enabled(true);
+            $formatter = new \Zend\Json\Expr('function () {
+                 var unit = {
+                 }[this.series.name];
+                 return this.x + ": <b>" + this.y + "</b> "/* + unit*/;
+             }');
+            $ob->tooltip->formatter($formatter);
+            $ob->series($series);
+
+            return array('chart' => $ob);
+        }
         return array();
     }
 
     /**
      * User sign up form action
-     *
+     * 
+     * @param Request $request
      * @Route("/sugnup", name="sugnup_form")
      * @Method("GET")
      * @Template("SampleUserBundle:Signup:form.html.twig")
@@ -51,6 +171,10 @@ class UserController extends Controller
         
     }
 
+    /**
+     * Builds sign form
+     * @param User $user
+     */
     private function signupForm(User $user) {
 
         $form = $this->createForm(new SignupFormType($this->container), $user, array(
@@ -67,6 +191,7 @@ class UserController extends Controller
     /**
      * User sign up action
      *
+     * @param Request $request
      * @Route("/sugnup", name="signup")
      * @Method("POST")
      * @Template("SampleUserBundle:Signup:form.html.twig")

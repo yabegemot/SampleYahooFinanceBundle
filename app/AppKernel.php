@@ -19,6 +19,7 @@ class AppKernel extends Kernel
             new AppBundle\AppBundle(),
             new Sample\UserBundle\SampleUserBundle(),
             new Sample\YahooFinanceBundle\SampleYahooFinanceBundle(),
+            new Ob\HighchartsBundle\ObHighchartsBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'), true)) {

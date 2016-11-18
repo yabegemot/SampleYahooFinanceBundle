@@ -1,3 +1,40 @@
+
+Yuriy Arutyunov
+
+Clone this repository. It already have Symfony 2.8.5 instalation
+
+Edit parameters.yml for database credentials and add lines from parameters.yml.dist
+
+run composer update - to get and update bundles
+
+Run
+php app/console doctrine:database:create
+php app/console doctrine:schema:update --force
+
+Rum Migration script
+php app/console doctrine:migrations:migrate
+
+Start sever
+php app/console server:run
+
+Navigate to http://127.0.0.1:8000
+You can login as root/root or register as new user
+The only zone without security is http://127.0.0.1:8000/app/
+
+
+1. Sign up / sign in for new users. - 3h
+
+2. Ability to create portfolio of stocks for registered users (standard CRUD would be fine).
+User should be able to add/remove any stock from the portfolio. - 2h
+
+3. Use Yahoo Finance to get the data for stocks. - 1h (much more if add the time to find and huck HIDDEN Yahoo Finance API)
+
+4. Show the plot "cost of portfolio vs time" for 2 last years. - 1
+
+
+
+
+
 Symfony Standard Edition
 ========================
 
