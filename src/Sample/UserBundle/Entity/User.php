@@ -104,11 +104,19 @@ class User implements UserInterface, Serializable {
      */
     private $stockSymbols;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="Sample\YahooFinanceBundle\Entity\StockSymbol", mappedBy="userPortfolios", cascade={"persist","remove"})
+     * @ORM\JoinTable(name="stock_symbol_user_portfolio")
+     * @var ArrayCollection
+     */
+    private $portfolioSymbols;
+
     public function __construct()
     {
         $this->isActive = true;
         $this->roles = new ArrayCollection();
         $this->stockSymbols = new ArrayCollection();
+        $this->portfolioSymbols = new ArrayCollection();
     }
 
     /**
@@ -597,5 +605,51 @@ class User implements UserInterface, Serializable {
     public function getStockSymbols()
     {
         return $this->stockSymbols;
+    }
+
+    /**
+     * Add portfolioSymbol
+     *
+     * @param \Sample\YahooFinanceBundle\Entity\StockSymbol $portfolioSymbol
+     *
+     * @return User
+     */
+    public function addPortfolioSymbol(\Sample\YahooFinanceBundle\Entity\StockSymbol $portfolioSymbol)
+    {
+        $this->portfolioSymbols[] = $portfolioSymbol;
+
+        return $this;
+    }
+
+    /**
+     * Check id stockSymbol exists in portfolio list
+     *
+     * @param \Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol
+     *
+     * @return boolean
+     */
+    public function hasPortfolioSymbol(\Sample\YahooFinanceBundle\Entity\StockSymbol $stockSymbol)
+    {
+        return $this->portfolioSymbols->contains($stockSymbol);
+    }
+
+    /**
+     * Remove portfolioSymbol
+     *
+     * @param \Sample\YahooFinanceBundle\Entity\StockSymbol $portfolioSymbol
+     */
+    public function removePortfolioSymbol(\Sample\YahooFinanceBundle\Entity\StockSymbol $portfolioSymbol)
+    {
+        $this->portfolioSymbols->removeElement($portfolioSymbol);
+    }
+
+    /**
+     * Get portfolioSymbols
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getPortfolioSymbols()
+    {
+        return $this->portfolioSymbols;
     }
 }

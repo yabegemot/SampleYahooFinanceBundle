@@ -33,9 +33,17 @@ class StockSymbol {
      */
     private $users;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="Sample\UserBundle\Entity\User", inversedBy="portfolioSymbols", cascade={"persist","remove"})
+     * @ORM\JoinTable(name="stock_symbol_user_portfolio")
+     * @var ArrayCollection
+     */
+    private $userPortfolios;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->userPortfolios = new ArrayCollection();
     }
 
     /**
@@ -127,5 +135,53 @@ class StockSymbol {
     public function getUsers()
     {
         return $this->users;
+    }
+
+    /**
+     * Add userPortfolio
+     *
+     * @param \Sample\UserBundle\Entity\User $userPortfolio
+     *
+     * @return StockSymbol
+     */
+    public function addUserPortfolio(\Sample\UserBundle\Entity\User $userPortfolio)
+    {
+        $this->userPortfolios[] = $userPortfolio;
+
+        return $this;
+    }
+
+    /**
+     * Check if stock symbol exist in user portfolio list
+     *
+     * @param \Sample\UserBundle\Entity\User $userPortfolio
+     *
+     * @return StockSymbol
+     */
+    public function hasPortfolioUser(\Sample\UserBundle\Entity\User $userPortfolio)
+    {
+        return $this->userPortfolios->contains($userPortfolio);
+
+        return $this;
+    }
+
+    /**
+     * Remove userPortfolio
+     *
+     * @param \Sample\UserBundle\Entity\User $userPortfolio
+     */
+    public function removeUserPortfolio(\Sample\UserBundle\Entity\User $userPortfolio)
+    {
+        $this->userPortfolios->removeElement($userPortfolio);
+    }
+
+    /**
+     * Get userPortfolios
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getUserPortfolios()
+    {
+        return $this->userPortfolios;
     }
 }

@@ -9,6 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Security\Core\SecurityContext;
 use Sample\YahooFinanceBundle\Entity\StockSymbol;
 use Sample\YahooFinanceBundle\Entity\Repository\StockSymbolRepository;
+use Sample\UserBundle\Entity\User;
 
 class UserPortfolioType extends AbstractType {
 
@@ -39,17 +40,23 @@ class UserPortfolioType extends AbstractType {
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-       $builder->add('stockSymbols', 'entity', array(
-                    'label' => 'Stocks',
+        $choices = array();
+        if( isset($options['data']) && $options['data'] instanceof User )
+        {
+            $choices = $options['data']->getPortfolioSymbols();
+        }
+        $builder->add('stockSymbols', 'entity', array(
+                    'label' => 'Stock Symbols',
                     'class' => StockSymbol::class,
                     'property' => 'symbol',
+                    'choices' => $choices,
                     'required' => true,
                     'multiple' => true,
                     'expanded' => true,
                     'preferred_choices' => $options['data']->getStockSymbols()->toArray(),
-                    'query_builder' => function (StockSymbolRepository $stockSymbolRepository) {
-                        return $stockSymbolRepository->queryAll();
-                    },
+                    //'query_builder' => function (StockSymbolRepository $stockSymbolRepository) {
+                    //    return $stockSymbolRepository->queryAll();
+                    //},
                     'attr' => array()
                 ));
     }

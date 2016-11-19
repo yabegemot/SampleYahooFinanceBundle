@@ -8,6 +8,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Sample\UserBundle\Form\UserPortfolioType;
 use Sample\YahooFinanceBundle\Entity\StockSymbol;
 
@@ -92,6 +93,46 @@ class FinanceController extends Controller
     /**
      *
      * @param Request $request
+     * @Route("/remove_symbol", name="remove_symbol", options={"expose"=true})
+     * @Method("DELETE")
+     * @Security("has_role('ROLE_USER')")
+     */
+    public function removeSymbolAction(Request $request)
+    {
+        $response = new \stdClass();
+        $response->valid = false;
+        $id = $request->get('id');
+        $em = $this->getDoctrine()->getManager();
+        $stockSymbolRepository = $em->getRepository('SampleYahooFinanceBundle:StockSymbol');
+
+        if( !empty($id) && ($stockSymbol = $stockSymbolRepository->find($id)) )
+        {
+            $user = $this->getUser();
+            if( $user->hasStockSymbol($stockSymbol)
+                && $stockSymbol->hasUser($user) )
+            {
+                $user->removeStockSymbol($stockSymbol);
+                $stockSymbol->removeUser($user);
+            }
+            if( $user->hasPortfolioSymbol($stockSymbol)
+                && $stockSymbol->hasPortfolioUser($user) )
+            {
+                $user->removePortfolioSymbol($stockSymbol);
+                $stockSymbol->removeUserPortfolio($user);
+            }
+            $em->persist($user);
+            $em->persist($stockSymbol);
+            $em->flush();
+            $response->valid = true;
+            
+        }
+        
+        return new JsonResponse($response);
+    }
+
+    /**
+     *
+     * @param Request $request
      * @Route("/lookup_symbol", name="lookup_symbol")
      * @Method("POST")
      * @Security("has_role('ROLE_USER')")
@@ -100,35 +141,53 @@ class FinanceController extends Controller
     public function lookupSymbolAction(Request $request)
     {
         $symbol = $request->get('symbol');
+                    
         if( !empty($symbol) )
         {
-            $query = 'select * from yahoo.finance.quotes where symbol in ("'.$symbol.'")';
-            $query = 'https://query.yahooapis.com/v1/public/yql?q='
+            $em = $this->getDoctrine()->getManager();
+            $stockSymbolRepository = $em->getRepository('SampleYahooFinanceBundle:StockSymbol');
+
+            if( !($stockSymbol = $stockSymbolRepository->findOneBy(array('symbol' => $symbol))) )
+            {
+                $query = 'select * from yahoo.finance.quotes where symbol in ("'.$symbol.'")';
+                $query = 'https://query.yahooapis.com/v1/public/yql?q='
                     .urlencode($query)
                     .'&format=json&env=store://datatables.org/alltableswithkeys&callback=';
-            $c = curl_init();
-            curl_setopt($c, CURLOPT_URL, $query);
-            curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($c, CURLOPT_HEADER, false);
-            $content = curl_exec($c);
-            try
-            {
-                $contentObject = json_decode($content);
-
-                if( is_object($contentObject) && $contentObject->query->count === 1)
+                $c = curl_init();
+                curl_setopt($c, CURLOPT_URL, $query);
+                curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($c, CURLOPT_HEADER, false);
+                $content = curl_exec($c);
+                try
                 {
-                    $em = $this->getDoctrine()->getManager();
-                    $stockSymbolRepository = $em->getRepository('SampleYahooFinanceBundle:StockSymbol');
-                    if( !$stockSymbolRepository->findOneBy(array('symbol' => $symbol)) )
+                    $contentObject = json_decode($content);
+
+                    if( is_object($contentObject) && !empty($contentObject->query->results->quote->Name) )
                     {
-                        $stockSymbol = new StockSymbol();
-                        $stockSymbol->setSymbol($symbol);
-                        $em->persist($stockSymbol);
-                        $em->flush();
+                        if( !$stockSymbolRepository->findOneBy(array('symbol' => $symbol)) )
+                        {
+                            $stockSymbol = new StockSymbol();
+                            $stockSymbol->setSymbol($symbol);
+                            $em->persist($stockSymbol);
+                            $em->flush();
+                        }
                     }
-                }
-            } catch (Exception $ex) {}
+                } catch (Exception $ex) {}
+            }
+
+            $user = $this->getUser();
+            if( $stockSymbol instanceof StockSymbol
+                && !$user->hasPortfolioSymbol($stockSymbol)
+                && !$stockSymbol->hasPortfolioUser($user) )
+            {
+                    $user->addPortfolioSymbol($stockSymbol);
+                    $em->persist($user);
+                    $stockSymbol->addUserPortfolio($user);
+                    $em->persist($stockSymbol);
+                    $em->flush();
+            }
         }
+
         return $this->redirect($this->generateUrl('finance_home'));
     }
 }

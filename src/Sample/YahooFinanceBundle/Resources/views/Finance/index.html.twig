@@ -5,6 +5,30 @@
         $('[type=checkbox]')
             .bootstrapSwitch({size: 'small', onText: 'INCLUDED', offText: 'EXCLUDED'})
             .css('height', 'auto');
+
+        $('#stock-list a').unbind().bind('click', function(e){
+            e.preventDefault();
+            var stockDiv = $(this).parents('div.stock-symbol'),
+                id = $(this).data('id');
+            
+            $.ajax({
+                url: '{{path('remove_symbol')}}',
+                method: 'DELETE',
+                dataType: "json",
+                data: {
+                    id: id
+                },
+                success: function(data) {
+                    if(data.valid)
+                    {
+                        stockDiv.remove();
+                    }
+                },
+                error: function() {
+                    
+                }
+            });
+        });
     });
     </script>
     <style>
@@ -29,7 +53,6 @@
           </div>
         </div>
         <div class="navbar-collapse collapse">
-          
           <ul class="nav navbar-nav navbar-right">
             <li><a href="{{path('account_home')}}">Cost</a></li>
             <li class="active"><a href="{{path('finance_home')}}">Portfolio</a></li>
@@ -57,19 +80,22 @@
         </div>
           
         {# if form.stockSymbols|count > 0 #}
-        <div class="col-lg-12">
+        <div id="stock-list" class="col-lg-12">
             {{ form_start(form, {'attr': {'id': 'portfolio-form', 'class' : 'form-horizontal', 'role' : 'form' } }) }}
                 {% for stockSymbol in form.stockSymbols %}
-                <div class="form-group col-lg-4">
+                <div class="form-group col-lg-4 stock-symbol">
                     <div class="col-lg-4 text-right">
                         {{ form_label(stockSymbol, null, {'label_attr': {'class': 'control-label'}}) }}
                     </div>
                     <div class="col-lg-8 text-left">
                         {{ form_widget(stockSymbol) }}
                     </div>
+                    <div class="col-lg-12 text-center">
+                        <a href="" data-id="{{stockSymbol.vars.value}}" data-symbol="{{stockSymbol.vars.label}}">Remove from list</a>
+                    </div>
                 </div>
                 {% endfor %}
-            <div class="form-group text-center">
+            <div class="form-group text-center col-lg-12">
                 {{ form_end(form) }}
             </div>
         </div>
